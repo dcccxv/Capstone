@@ -202,6 +202,10 @@ public class MainActivity extends AppCompatActivity {
                 //iv_preview.setImageBitmap(bitmap);
 
                 //uploadImage(data.getData());
+                scaleBitmapDown(bitmap, MAX_DIMENSION);
+                callCloudVision(bitmap);
+                mMainImage.setImageBitmap(bitmap);
+
                 camera.startPreview();
                 inProgress = false;
             }
