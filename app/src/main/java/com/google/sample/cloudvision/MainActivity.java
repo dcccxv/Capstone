@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String FILE_NAME = "temp.jpg";
     private static final String ANDROID_CERT_HEADER = "X-Android-Cert";
     private static final String ANDROID_PACKAGE_HEADER = "X-Android-Package";
-    private static final int MAX_LABEL_RESULTS = 10000;
+    private static final int MAX_LABEL_RESULTS = 1000;
     private static final int MAX_DIMENSION = 1200;
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                 startTakePicture ();
             }
         };
-        timer.schedule(tt, 0,30000);
+        timer.schedule(tt, 1000,60000);
     }
 
     public SurfaceHolder.Callback surfaceListener = new SurfaceHolder.Callback()
@@ -202,9 +202,9 @@ public class MainActivity extends AppCompatActivity {
                 //iv_preview.setImageBitmap(bitmap);
 
                 //uploadImage(data.getData());
-                scaleBitmapDown(bitmap, MAX_DIMENSION);
-                callCloudVision(bitmap);
-                mMainImage.setImageBitmap(bitmap);
+                Bitmap bitmap2 = scaleBitmapDown(bitmap, MAX_DIMENSION);
+                callCloudVision(bitmap2);
+                mMainImage.setImageBitmap(bitmap2);
 
                 camera.startPreview();
                 inProgress = false;
@@ -438,7 +438,7 @@ public class MainActivity extends AppCompatActivity {
         //List labels = response.getResponses();
         if (message != null) {
 
-            //message  = response.getResponses().toString();
+            message  = response.getResponses().toString();
             String test[] = message.split(",");
             int count = 0;
             for(int i=0 ; i<test.length ; i++)
