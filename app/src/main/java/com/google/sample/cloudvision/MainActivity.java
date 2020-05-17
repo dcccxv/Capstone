@@ -17,21 +17,31 @@
 package com.google.sample.cloudvision;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
@@ -48,6 +58,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
@@ -62,15 +74,22 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -80,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String FILE_NAME = "temp.jpg";
     private static final String ANDROID_CERT_HEADER = "X-Android-Cert";
     private static final String ANDROID_PACKAGE_HEADER = "X-Android-Package";
-    private static final int MAX_LABEL_RESULTS = 1000;
+    private static final int MAX_LABEL_RESULTS = 10000;
     private static final int MAX_DIMENSION = 1200;
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -95,8 +114,20 @@ public class MainActivity extends AppCompatActivity {
     SurfaceView sv_viewFinder;
     SurfaceHolder sh_viewFinder;
     Camera camera;
+    SeekBar ZoomBar;
+    String id;
+
 
     boolean inProgress = false;
+    private static DatabaseReference mDatabase;
+    private final int PERMISSIONS_REQUEST_RESULT = 1;
+    public static int BRIGHT_STATE = 1;
+
+    CoordinatorLayout MainLayout;
+    private PowerManager.WakeLock screenWakeLock;
+    private ImageView BlackScreen;
+    private static String loginID;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,15 +136,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder
-                    .setMessage(R.string.dialog_select_prompt)
-                    .setPositiveButton(R.string.dialog_select_gallery, (dialog, which) -> startGalleryChooser())
-                    .setNegativeButton(R.string.dialog_select_camera, (dialog, which) -> startCamera());
-            builder.create().show();
-        });
+        loginID = getIntent().getStringExtra("id");
+        getWindow().setStatusBarColor(Color.BLACK);
+
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         mImageDetails = findViewById(R.id.image_details);
         mMainImage = findViewById(R.id.main_image);
@@ -121,8 +148,77 @@ public class MainActivity extends AppCompatActivity {
         sh_viewFinder = sv_viewFinder.getHolder();
         sh_viewFinder.addCallback(surfaceListener);
         sh_viewFinder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        MainLayout = findViewById(R.id.MainLayout);
+        BlackScreen = findViewById(R.id.BlackScreen);
+        Button FullScreenButton = findViewById(R.id.FullScreenButton);
 
-        Timer timer = new Timer(true);
+        int permissonCheck= ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);//권한요구
+        if(permissonCheck == PackageManager.PERMISSION_GRANTED){
+            ;
+        }else{//권한이 없을때
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)){
+                // Toast.makeText(getApplicationContext(), "카메라권한이 필요합니다", Toast.LENGTH_SHORT).show();
+                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_RESULT);
+            }else{
+                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_RESULT);
+            }
+            //Intent intent = getIntent();
+            //finish();
+            //startActivity(intent);
+        }
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(view -> {
+            /*AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder
+                    .setMessage(R.string.dialog_select_prompt)
+                    .setPositiveButton(R.string.dialog_select_gallery, (dialog, which) -> startGalleryChooser())
+                    .setNegativeButton(R.string.dialog_select_camera, (dialog, which) -> startCamera());
+            builder.create().show();*/
+
+            WindowManager.LayoutParams params = getWindow().getAttributes();
+            if(BRIGHT_STATE == 1) {
+                params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF;
+                setFullScreen();
+                BlackScreen.setVisibility(View.VISIBLE);
+                toolbar.setVisibility(View.GONE);
+                fab.setVisibility(View.INVISIBLE);
+                FullScreenButton.setVisibility(View.VISIBLE);
+                BRIGHT_STATE = 0;
+/*
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                screenWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "screenWakeLock");
+                screenWakeLock.acquire();*/
+            }
+           /* else {
+                params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+                setFullScreen();
+                BlackScreen.setVisibility(View.INVISIBLE);
+                toolbar.setVisibility(View.VISIBLE);
+                BRIGHT_STATE = 1;
+            }*/
+            getWindow().setAttributes(params);
+        });
+
+        FullScreenButton.setOnClickListener(view -> {
+            if(BRIGHT_STATE == 0) {
+                WindowManager.LayoutParams params = getWindow().getAttributes();
+                params.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
+                setFullScreen();
+                BlackScreen.setVisibility(View.INVISIBLE);
+                toolbar.setVisibility(View.VISIBLE);
+                fab.setVisibility(View.VISIBLE);
+                FullScreenButton.setVisibility(View.GONE);
+                BRIGHT_STATE = 1;
+                getWindow().setAttributes(params);
+            }
+        });
+/*
+        Intent intent = getIntent();//로그인 ID받아오기
+        loginID = intent.getExtras().getString("ID");
+*/
+
+        Timer timer = new Timer(true);//자동 촬영
         TimerTask tt = new TimerTask()
         {
             @Override
@@ -131,7 +227,87 @@ public class MainActivity extends AppCompatActivity {
                 startTakePicture ();
             }
         };
-        timer.schedule(tt, 1000,60000);
+        timer.schedule(tt, 1000,30000);
+
+        ZoomBar = (SeekBar) findViewById(R.id.ZoomBar);
+        ZoomBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "progress:"+progress);
+
+                if(camera.getParameters().isZoomSupported()){
+                    if(camera.getParameters().getMaxZoom() > progress) {
+                        Camera.Parameters params = camera.getParameters();
+                        params.setZoom(progress);
+                        camera.setParameters(params);
+
+                        camera.autoFocus(new Camera.AutoFocusCallback() {
+                            @Override
+                            public void onAutoFocus(boolean b, Camera camera) {
+                                Log.i("a", "autof = " + b);
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "onStartTrackingTouch");
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "onStartTrackingTouch");
+            }
+        });
+    }
+
+    private void setFullScreen(){
+        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        int newUiOptions = uiOptions;
+        boolean isImmersiveModeEnabled =
+                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
+        if (isImmersiveModeEnabled) {
+            Log.d(TAG, "Turning immersive mode mode off. ");
+        } else {
+            Log.d(TAG, "Turning immersive mode mode on.");
+        }
+        newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
+    }
+
+    private static void writeNewUser(String userId, int count) {//업로드
+        Map<String, Object> taskMap = new HashMap<String, Object>();
+        taskMap.put("locations/"+userId+"/count", count);
+
+        long now = System.currentTimeMillis();
+        Date date = new Date(now);
+        //SimpleDateFormat mFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        //String time = mFormat.format(date);
+        taskMap.put("locations/"+userId+"/time", now);
+
+        mDatabase.updateChildren(taskMap);
+        /*mDatabase.child("Stores").child(userId).setValue(user);
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // Write was successful!
+                        Toast.makeText(MainActivity.this, "저장을 완료했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Write failed
+                        Toast.makeText(MainActivity.this, "저장을 실패했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                });*/
     }
 
     public SurfaceHolder.Callback surfaceListener = new SurfaceHolder.Callback()
@@ -141,6 +317,7 @@ public class MainActivity extends AppCompatActivity {
         {
             Camera.Parameters parameters = camera.getParameters();
             parameters.setPreviewSize(width, height);
+            camera.setDisplayOrientation(90);
             camera.startPreview();
         }
 
@@ -199,12 +376,9 @@ public class MainActivity extends AppCompatActivity {
             if (data != null)
             {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data,  0,  data.length);
-                //iv_preview.setImageBitmap(bitmap);
-
-                //uploadImage(data.getData());
-                Bitmap bitmap2 = scaleBitmapDown(bitmap, MAX_DIMENSION);
-                callCloudVision(bitmap2);
-                mMainImage.setImageBitmap(bitmap2);
+                Bitmap resizedImage = scaleBitmapDown(bitmap, MAX_DIMENSION);
+                callCloudVision(resizedImage);
+                mMainImage.setImageBitmap(resizedImage);
 
                 camera.startPreview();
                 inProgress = false;
@@ -215,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
+/*
     public void startGalleryChooser() {
         if (PermissionUtils.requestPermission(this, GALLERY_PERMISSIONS_REQUEST, Manifest.permission.READ_EXTERNAL_STORAGE)) {
             Intent intent = new Intent();
@@ -295,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Image picker gave us a null image.");
             Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
 
     private Vision.Images.Annotate prepareAnnotationRequest(Bitmap bitmap) throws IOException {
         HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
@@ -413,7 +587,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Bitmap scaleBitmapDown(Bitmap bitmap, int maxDimension) {
-
         int originalWidth = bitmap.getWidth();
         int originalHeight = bitmap.getHeight();
         int resizedWidth = maxDimension;
@@ -448,10 +621,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             message = Integer.toString(count);
+            writeNewUser(loginID, count);
         } else {
             message  = "nothing";
         }
         return message;
-
     }
 }
