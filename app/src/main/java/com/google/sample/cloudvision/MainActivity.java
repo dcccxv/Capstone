@@ -288,9 +288,10 @@ public class MainActivity extends AppCompatActivity {
 
         long now = System.currentTimeMillis();
         Date date = new Date(now);
-        //SimpleDateFormat mFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        //String time = mFormat.format(date);
-        taskMap.put("locations/"+userId+"/time", now);
+        SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddhhmmss");
+        String getTime = simpleDate.format(date);
+        double nowTime = Double.parseDouble(getTime);
+        taskMap.put("locations/"+userId+"/time", nowTime);
 
         mDatabase.updateChildren(taskMap);
         /*mDatabase.child("Stores").child(userId).setValue(user);

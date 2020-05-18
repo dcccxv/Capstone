@@ -37,7 +37,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -164,12 +166,16 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
             markerOptions.title(location.name);
 
             long now = System.currentTimeMillis();
+            Date mDate = new Date(now);
+            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddhhmmss");
+            String getTime = simpleDate.format(mDate);
+            double nowTime = Double.parseDouble(getTime);
             /*
             if (location.count == 0)
                 markerOptions.snippet("0%");
             else
                 markerOptions.snippet("" + (double) location.count / location.seat * 100 + "%");*/
-            if((location.time - now) < 100000){
+            if((nowTime-location.time) > 10000.0){
                 markerOptions.snippet("현재촬영중이아님");
             }
             else if (location.count == 0) {
