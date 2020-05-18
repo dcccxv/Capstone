@@ -175,7 +175,7 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                 markerOptions.snippet("0%");
             else
                 markerOptions.snippet("" + (double) location.count / location.seat * 100 + "%");*/
-            if((nowTime-location.time) > 10000.0){
+            if((nowTime-location.time) > 100){
                 markerOptions.snippet("현재촬영중이아님");
             }
             else if (location.count == 0) {
