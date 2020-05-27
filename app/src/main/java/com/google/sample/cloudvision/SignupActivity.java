@@ -48,7 +48,7 @@ public class SignupActivity extends AppCompatActivity {
 
                 if (storeID.equals("") || pw.equals("") || storeName.equals("") || seat.equals("") || lat.equals("") || lng.equals(""))
                     Toast.makeText(SignupActivity.this, "하나 이상의 빈칸이 존재합니다.", Toast.LENGTH_SHORT).show();
-                else if (seat.equals("0"))
+                else if ( Integer.parseInt(seat) < 1) //else if (seat.equals("0"))
                     Toast.makeText(SignupActivity.this, "좌석 수는 0이 될수 없습니다.", Toast.LENGTH_SHORT).show();
                 else if (storeID.equals(".") || storeID.equals("#") || storeID.equals("$") || storeID.equals("[") || storeID.equals("]")
                         || pw.equals(".") || pw.equals("#") || pw.equals("$") || pw.equals("[") || pw.equals("]")

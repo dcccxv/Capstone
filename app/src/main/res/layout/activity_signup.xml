@@ -111,7 +111,7 @@
                 android:gravity="left"
                 android:text="좌석 수"
                 android:textColor="#000000"
-                android:digits="123456789"/>
+                android:digits="0123456789"/>
 
             <EditText
                 android:layout_width="match_parent"
