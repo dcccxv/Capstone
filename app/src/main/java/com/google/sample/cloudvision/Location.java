@@ -7,6 +7,7 @@ public class Location {
     double lng;
     int count;
     int seat;
+    double time;
 
     public Location() {
     }
@@ -35,6 +36,10 @@ public class Location {
         this.seat = seat;
     }
 
+    public void setTime(double time) {
+        this.time = time;
+    }
+
     public String getName() {
         return name;
     }
@@ -59,12 +64,17 @@ public class Location {
         return seat;
     }
 
-    public Location(String name, String id, double lat, double lng, int count, int seat) {
+    public double getTime() {
+        return time;
+    }
+
+    public Location(String name, String id, double lat, double lng, int count, int seat, double time) {
         this.name = name;
         this.id = id;
         this.lat = lat;
         this.lng = lng;
         this.count = count;
         this.seat = seat;
+        this.time = time;
     }
 }

@@ -110,7 +110,8 @@
                 android:layout_height="wrap_content"
                 android:gravity="left"
                 android:text="좌석 수"
-                android:textColor="#000000" />
+                android:textColor="#000000"
+                android:digits="123456789"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -146,7 +147,8 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/et_lat"
                 android:inputType="numberDecimal"
-                android:singleLine="true"/>
+                android:singleLine="true"
+                android:digits="0123456789."/>
         </LinearLayout>
     </LinearLayout>
 
@@ -176,7 +178,8 @@
                 android:id="@+id/et_lng"
                 android:inputType="numberDecimal"
                 android:singleLine="true"
-                android:imeOptions="actionDone" />
+                android:imeOptions="actionDone"
+                android:digits="0123456789."/>
         </LinearLayout>
     </LinearLayout>
 

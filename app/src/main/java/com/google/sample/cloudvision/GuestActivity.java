@@ -20,6 +20,7 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -37,12 +38,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class GuestActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
+public class GuestActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
     GoogleMap mMap = null;
     ArrayList<Location> locations = new ArrayList<>();
     EditText et;
@@ -79,9 +82,11 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                 locations.clear();
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     Location get = postSnapshot.getValue(Location.class);
+                    get.id = postSnapshot.getKey();
                     locations.add(get);
-                    refreshMap();
                 }
+                refreshMap();
+
             }
 
             @Override
@@ -113,8 +118,7 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                             if (personalMarker != null) personalMarker.remove();
                             personalMarker = mMap.addMarker(markerOptions);
                             if (is_first_move) {
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(temp));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(temp, 15f));
                                 is_first_move = false;
                             }
                         }
@@ -146,8 +150,8 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-        refreshMap();
+        mMap.setOnInfoWindowClickListener(this);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(37.571015, 127.009382)));
     }
 
     public void refreshMap() {
@@ -162,16 +166,40 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
             Log.d("asdf", location.lat + " " + location.lng);
             markerOptions.position(new LatLng(location.lat, location.lng));
             markerOptions.title(location.name);
+
+            long now = System.currentTimeMillis();
+            Date mDate = new Date(now);
+            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddhhmmss");
+            String getTime = simpleDate.format(mDate);
+            double nowTime = Double.parseDouble(getTime);
+            /*
             if (location.count == 0)
                 markerOptions.snippet("0%");
             else
-                markerOptions.snippet("" + (double) location.count / location.seat * 100 + "%");
+                markerOptions.snippet("" + (double) location.count / location.seat * 100 + "%");*/
+            if((nowTime-location.time) > 100){
+                markerOptions.snippet("현재촬영중이아님");
+            }
+            else if (location.count == 0) {
+                markerOptions.snippet("여유");
+            }
+            else if(((double) location.count / location.seat * 100) < 30){
+                markerOptions.snippet("여유");
+            }
+            else if(((double) location.count / location.seat * 100) < 70){
+                markerOptions.snippet("보통");
+            }
+            else {
+                markerOptions.snippet("혼잡");
+            }
+
+
             if (mMap != null)
-                mMap.addMarker(markerOptions);
+                mMap.addMarker(markerOptions).setTag(location.getId());
         }
         if (mMap != null && !is_location_on && is_first_move) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(tempLat / locations.size(), tempLng / locations.size())));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(7));
+            is_first_move = false;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(37.571015, 127.009382), 14f));
         }
     }
 
@@ -180,8 +208,7 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             Log.d("asdf", Double.parseDouble(data.getStringExtra("lat"))+" "+Double.parseDouble(data.getStringExtra("lng")));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(data.getStringExtra("lat")), Double.parseDouble(data.getStringExtra("lng")))));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(data.getStringExtra("lat")), Double.parseDouble(data.getStringExtra("lng"))), 15f));
         }
     }
 
@@ -211,7 +238,6 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                 break;
         }
         hideKeyboard();
-
     }
 
     private void playButtonClickAnimation(int id) {
@@ -221,5 +247,12 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
     private void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        Intent intent = new Intent(GuestActivity.this, CommentActivity.class);
+        intent.putExtra("id", marker.getTag()+"");
+        startActivity(intent);
     }
 }
