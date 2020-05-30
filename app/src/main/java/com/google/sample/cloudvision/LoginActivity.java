@@ -46,32 +46,31 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String id = ((EditText)findViewById(R.id.et_id)).getText().toString();
                 String pw = ((EditText)findViewById(R.id.et_passwd)).getText().toString();
+                String approval = "0";
 
-                if(id!=null && !id.equals("") && !id.equals(".") && !id.equals("#") && !id.equals("$") && !id.equals("[") && !id.equals("]")) {
-                    DatabaseReference myRef = FirebaseDatabase.getInstance().getReference().child("locations");
-                    myRef.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (pw != null && !pw.equals("")&& !pw.equals(".") && !pw.equals("#") && !pw.equals("$") && !pw.equals("[") && !pw.equals("]") && dataSnapshot.exists() && dataSnapshot.child("pw").getValue().equals(pw)) {
-                                Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.putExtra("id", id);
-                                startActivity(intent);
-                                finish();
-                            } else {
-                                Toast.makeText(LoginActivity.this, "아이디나 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
-                            }
+                DatabaseReference myRef = FirebaseDatabase.getInstance().getReference().child("locations");
+                myRef.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.child("approval").getValue().equals(approval)){
+                            Toast.makeText(LoginActivity.this, "관리자의 승인이 필요합니다", Toast.LENGTH_SHORT).show();
                         }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                        else if(dataSnapshot.exists() && dataSnapshot.child("pw").getValue().equals(pw)){
+                            Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            intent.putExtra("id", id);
+                            startActivity(intent);
+                            finish();
+                        }else{
+                            Toast.makeText(LoginActivity.this, "아이디나 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
                         }
-                    });
-                }
-                else {
-                    Toast.makeText(LoginActivity.this, "아이디나 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
-                }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
             }
         });
         findViewById(R.id.btn_signup_page).setOnClickListener(new View.OnClickListener() {

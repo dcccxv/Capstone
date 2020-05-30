@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/colorPrimaryDark"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize">
@@ -13,6 +14,8 @@
     <EditText
         android:id="@+id/search_bar"
         android:layout_width="0dp"
+        android:textColor="#ffffffff"
+        tools:text="검색어 예시"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:imeOptions="actionSearch"

@@ -235,21 +235,23 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 // TODO Auto-generated method stub
                 Log.d(TAG, "progress:"+progress);
+                if(inProgress == false) {
+                    if (camera.getParameters().isZoomSupported()) {
+                        if (camera.getParameters().getMaxZoom() > progress) {
+                            Camera.Parameters params = camera.getParameters();
+                            params.setZoom(progress);
+                            camera.setParameters(params);
 
-                if(camera.getParameters().isZoomSupported()){
-                    if(camera.getParameters().getMaxZoom() > progress) {
-                        Camera.Parameters params = camera.getParameters();
-                        params.setZoom(progress);
-                        camera.setParameters(params);
-
-                        camera.autoFocus(new Camera.AutoFocusCallback() {
-                            @Override
-                            public void onAutoFocus(boolean b, Camera camera) {
-                                Log.i("a", "autof = " + b);
-                            }
-                        });
+                            camera.autoFocus(new Camera.AutoFocusCallback() {
+                                @Override
+                                public void onAutoFocus(boolean b, Camera camera) {
+                                    Log.i("a", "autof = " + b);
+                                }
+                            });
+                        }
                     }
                 }
+
             }
 
             @Override
@@ -288,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
 
         long now = System.currentTimeMillis();
         Date date = new Date(now);
-        SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddhhmmss");
+        SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss");
         String getTime = simpleDate.format(date);
         double nowTime = Double.parseDouble(getTime);
         taskMap.put("locations/"+userId+"/time", nowTime);

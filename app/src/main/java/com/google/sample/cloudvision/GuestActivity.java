@@ -41,6 +41,7 @@ import com.google.gson.Gson;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -55,18 +56,19 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
     Marker personalMarker;
     Handler handler;
     Gson gson;
+    HashMap<String, Marker> markers = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guest);
-        int permissonCheck= ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);//권한요구
-        if(permissonCheck == PackageManager.PERMISSION_GRANTED){
-        }else{//권한이 없을때
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)){
-                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-            }else{
-                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        int permissonCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);//권한요구
+        if (permissonCheck == PackageManager.PERMISSION_GRANTED) {
+        } else {//권한이 없을때
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }
 
@@ -86,7 +88,6 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                     locations.add(get);
                 }
                 refreshMap();
-
             }
 
             @Override
@@ -104,7 +105,7 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d("asdf", jjjj.lat+ " " +jjjj.lng);
+                            Log.d("asdf", jjjj.lat + " " + jjjj.lng);
                             LatLng temp = new LatLng(jjjj.lat, jjjj.lng);
                             MarkerOptions markerOptions = new MarkerOptions();
                             markerOptions.position(temp);
@@ -155,47 +156,53 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
     }
 
     public void refreshMap() {
-        double tempLat = 0;
-        double tempLng = 0;
-        if (mMap != null)
-            mMap.clear();
         for (Location location : locations) {
-            MarkerOptions markerOptions = new MarkerOptions();
-            tempLat += location.lat;
-            tempLng += location.lng;
-            Log.d("asdf", location.lat + " " + location.lng);
-            markerOptions.position(new LatLng(location.lat, location.lng));
-            markerOptions.title(location.name);
-
             long now = System.currentTimeMillis();
             Date mDate = new Date(now);
-            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddhhmmss");
+            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss");
             String getTime = simpleDate.format(mDate);
             double nowTime = Double.parseDouble(getTime);
+
+            if (markers.containsKey(location.id)) {//이미 있었던 매장 (객체에 내용만 수정)
+                if ((nowTime - location.time) > 100) {
+                    markers.get(location.id).setSnippet("현재촬영중이아님");
+                } else if (location.count == 0) {
+                    markers.get(location.id).setSnippet("여유");
+                } else if (((double) location.count / location.seat * 100) < 30) {
+                    markers.get(location.id).setSnippet("여유");
+                } else if (((double) location.count / location.seat * 100) < 70) {
+                    markers.get(location.id).setSnippet("보통");
+                } else {
+                    markers.get(location.id).setSnippet("혼잡");
+                }
+            } else {//새로운 매장 (객체를 추가)
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(new LatLng(location.lat, location.lng));
+                markerOptions.title(location.name);
             /*
             if (location.count == 0)
                 markerOptions.snippet("0%");
             else
                 markerOptions.snippet("" + (double) location.count / location.seat * 100 + "%");*/
-            if((nowTime-location.time) > 100){
-                markerOptions.snippet("현재촬영중이아님");
-            }
-            else if (location.count == 0) {
-                markerOptions.snippet("여유");
-            }
-            else if(((double) location.count / location.seat * 100) < 30){
-                markerOptions.snippet("여유");
-            }
-            else if(((double) location.count / location.seat * 100) < 70){
-                markerOptions.snippet("보통");
-            }
-            else {
-                markerOptions.snippet("혼잡");
-            }
+                if ((nowTime - location.time) > 100) {
+                    markerOptions.snippet("현재촬영중이아님");
+                } else if (location.count == 0) {
+                    markerOptions.snippet("여유");
+                } else if (((double) location.count / location.seat * 100) < 30) {
+                    markerOptions.snippet("여유");
+                } else if (((double) location.count / location.seat * 100) < 70) {
+                    markerOptions.snippet("보통");
+                } else {
+                    markerOptions.snippet("혼잡");
+                }
 
 
-            if (mMap != null)
-                mMap.addMarker(markerOptions).setTag(location.getId());
+                if (mMap != null) {
+                    markers.put(location.id, mMap.addMarker(markerOptions));
+                    markers.get(location.id).setTag(location.getId());
+                }
+            }
+
         }
         if (mMap != null && !is_location_on && is_first_move) {
             is_first_move = false;
@@ -207,7 +214,7 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            Log.d("asdf", Double.parseDouble(data.getStringExtra("lat"))+" "+Double.parseDouble(data.getStringExtra("lng")));
+            Log.d("asdf", Double.parseDouble(data.getStringExtra("lat")) + " " + Double.parseDouble(data.getStringExtra("lng")));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(data.getStringExtra("lat")), Double.parseDouble(data.getStringExtra("lng"))), 15f));
         }
     }
@@ -252,7 +259,7 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public void onInfoWindowClick(Marker marker) {
         Intent intent = new Intent(GuestActivity.this, CommentActivity.class);
-        intent.putExtra("id", marker.getTag()+"");
+        intent.putExtra("id", marker.getTag() + "");
         startActivity(intent);
     }
 }

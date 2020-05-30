@@ -22,7 +22,6 @@ import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
     boolean is_end = false;
-    boolean output = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,50 +47,44 @@ public class SignupActivity extends AppCompatActivity {
 
                 if (storeID.equals("") || pw.equals("") || storeName.equals("") || seat.equals("") || lat.equals("") || lng.equals(""))
                     Toast.makeText(SignupActivity.this, "하나 이상의 빈칸이 존재합니다.", Toast.LENGTH_SHORT).show();
-                else if ( Integer.parseInt(seat) < 1) //else if (seat.equals("0"))
+
+                if (seat.equals("0"))
                     Toast.makeText(SignupActivity.this, "좌석 수는 0이 될수 없습니다.", Toast.LENGTH_SHORT).show();
-                else if (storeID.equals(".") || storeID.equals("#") || storeID.equals("$") || storeID.equals("[") || storeID.equals("]")
-                        || pw.equals(".") || pw.equals("#") || pw.equals("$") || pw.equals("[") || pw.equals("]")
-                        || storeName.equals(".") || storeName.equals("#") || storeName.equals("$") || storeName.equals("[") || storeName.equals("]")
-                        || seat.equals(".") || seat.equals("#") || seat.equals("$") || seat.equals("[") || seat.equals("]")
-                        || lat.equals(".") || lat.equals("#") || lat.equals("$") || lat.equals("[") || lat.equals("]")
-                        || lng.equals(".") || lng.equals("#") || lng.equals("$") || lng.equals("[") || lng.equals("]")){
-                    Toast.makeText(SignupActivity.this, ". # $ [ ] 는 사용할 수 없는 문자입니다.", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    DatabaseReference myRef = FirebaseDatabase.getInstance().getReference().child("locations");
 
-                    myRef.child(storeID).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (!dataSnapshot.exists()) {
-                                HashMap<String, Object> result = new HashMap<>();
-                                result.put("pw", pw);
-                                result.put("name", storeName);
-                                result.put("seat", Integer.parseInt(seat));
-                                result.put("lat", Double.parseDouble(lat));
-                                result.put("lng", Double.parseDouble(lng));
-                                result.put("time", Integer.parseInt(seat));
-                                is_end = true;
-                                myRef.child(storeID).setValue(result).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Toast.makeText(SignupActivity.this, "회원가입 완료", Toast.LENGTH_SHORT).show();
-                                        finish();
-                                    }
-                                });
-                            } else {
-                                if (!is_end)
-                                    Toast.makeText(SignupActivity.this, "존재하는 ID입니다.", Toast.LENGTH_SHORT).show();
-                            }
+                DatabaseReference myRef = FirebaseDatabase.getInstance().getReference().child("locations");
+
+                myRef.child(storeID).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.exists()) {
+                            HashMap<String, Object> result = new HashMap<>();
+                            result.put("pw", pw);
+                            result.put("name", storeName);
+                            result.put("seat", Integer.parseInt(seat));
+                            result.put("lat", Double.parseDouble(lat));
+                            result.put("lng", Double.parseDouble(lng));
+                            result.put("time", Integer.parseInt(seat));
+                            result.put("approval", "0");
+                            is_end = true;
+                            myRef.child(storeID).setValue(result).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(SignupActivity.this, "회원가입 완료", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                }
+                            });
+                        } else {
+                            if(!is_end)
+                                Toast.makeText(SignupActivity.this, "존재하는 ID입니다.", Toast.LENGTH_SHORT).show();
                         }
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
-                }
+                    }
+                });
+
             }
         });
     }
