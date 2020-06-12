@@ -78,6 +78,7 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -135,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
     private ImageView BlackScreen;
     private static String loginID;
     DatabaseReference myRef;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
