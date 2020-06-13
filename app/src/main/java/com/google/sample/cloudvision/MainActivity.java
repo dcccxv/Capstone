@@ -347,6 +347,38 @@ public class MainActivity extends AppCompatActivity {
                 // 입력하기 전에
             }
         });
+
+        TextView lastTime = findViewById(R.id.lastTime);
+        TextView peoples = findViewById(R.id.peoples);
+/*
+        mDatabase.child("locations").child(loginID).child("time").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Get Post object and use the values to update the UI
+                if(dataSnapshot.getValue(double.class) != null){
+                    double test = dataSnapshot.getValue(double.class);
+                    String post = Double.toString(test);//dataSnapshot.getValue(double.class).toString();
+                    lastTime.setText(post);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });*/
+
+        mDatabase.child("locations").child(loginID).child("count").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Get Post object and use the values to update the UI
+                if(dataSnapshot.getValue(int.class) != null){
+                    String post = dataSnapshot.getValue(int.class).toString();
+                    peoples.setText(post+"명");
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
     }
 
     @Override
