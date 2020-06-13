@@ -1,78 +1,46 @@
 package com.google.sample.cloudvision;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.LayoutInflater;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
+import com.google.sample.cloudvision.fragments.GoogleMapFragment;
+import com.google.sample.cloudvision.fragments.ShopListFragment;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
-
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 
-public class GuestActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
-    GoogleMap mMap = null;
-    ArrayList<Location> locations = new ArrayList<>();
-    EditText et;
-    boolean is_location_on = false;
-    boolean is_first_move = true;
-    GpsInfo jjjj;
-    Marker personalMarker;
-    Handler handler;
-    Gson gson;
-    HashMap<String, Marker> markers = new HashMap<>();
+public class GuestActivity extends AppCompatActivity implements View.OnClickListener{
+    static public GoogleMapFragment mapFragment;
+    static public ShopListFragment listFragment;
+    static public ArrayList<ImageView> tabImageViews;
+    static public boolean isPrograssing = true;
+    static public ProgressBar pgbar;
 
-    View marker_root_view;
-    TextView tv_marker;
+
+    public static Handler handler;
+
+    public enum FragmentType {
+        MAP_FRAGMENT, LIST_FRAGMENT;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_guest);
+        pgbar = findViewById(R.id.pg_bar);
         int permissonCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);//권한요구
         if (permissonCheck == PackageManager.PERMISSION_GRANTED) {
         } else {//권한이 없을때
@@ -82,262 +50,65 @@ public class GuestActivity extends AppCompatActivity implements OnMapReadyCallba
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             }
         }
+        findViewById(R.id.btn_list).setOnClickListener(this);
+        findViewById(R.id.btn_map).setOnClickListener(this);
+        listFragment = new ShopListFragment();
+        mapFragment = new GoogleMapFragment(getApplicationContext());
+        tabImageViews = new ArrayList<>();
+        tabImageViews.add(findViewById(R.id.img_map));
+        tabImageViews.add(findViewById(R.id.img_list));
 
-        jjjj = new GpsInfo(getApplicationContext());
-        jjjj.getLocation();
-        gson = new Gson();
         handler = new Handler();
-        initActionbar();
-        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference().child("locations");
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                locations.clear();
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    Location get = postSnapshot.getValue(Location.class);
-                    get.id = postSnapshot.getKey();
-                    locations.add(get);
-                }
-                refreshMap();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Log.w("asdf", "Failed to read value.", error.toException());
-            }
-        });
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (is_location_on) {
-                    jjjj.getLocation();
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d("asdf", jjjj.lat + " " + jjjj.lng);
-                            LatLng temp = new LatLng(jjjj.lat, jjjj.lng);
-                            MarkerOptions markerOptions = new MarkerOptions();
-                            markerOptions.position(temp);
-                            markerOptions.title("내 위치");
-
-                            BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.my_locate);
-                            Bitmap b = bitmapdraw.getBitmap();
-                            Bitmap smallMarker = Bitmap.createScaledBitmap(b, 50, 50, false);
-                            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
-
-
-                            if (personalMarker != null) personalMarker.remove();
-                            personalMarker = mMap.addMarker(markerOptions);
-                            if (is_first_move) {
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(temp, 15f));
-                                is_first_move = false;
-                            }
-                        }
-                    });
-                }
-            }
-        }, 0, 3000);
-    }
-
-    private void initActionbar() {
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayShowCustomEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(false);
-        actionBar.setDisplayShowTitleEnabled(false);
-        View mCustomView = LayoutInflater.from(this).inflate(R.layout.actionbar_main, null);
-        actionBar.setCustomView(mCustomView);
-        Toolbar parent = (Toolbar) mCustomView.getParent();
-        parent.setContentInsetsAbsolute(0, 0);
-        ActionBar.LayoutParams params = new ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT);
-        actionBar.setCustomView(mCustomView, params);
-
-        et = findViewById(R.id.search_bar);
-
-        findViewById(R.id.action_search).setOnClickListener(this);
-        findViewById(R.id.action_locate).setOnClickListener(this);
+        callFragment(FragmentType.MAP_FRAGMENT);
     }
 
     @Override
-    public void onMapReady(final GoogleMap googleMap) {
-        mMap = googleMap;
-        mMap.setOnInfoWindowClickListener(this);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(37.571015, 127.009382)));
-
-
-        setCustomMarkerView();
-        getSampleMarkerItems();
-    }
-
-
-    public void refreshMap() {
-        for (Location location : locations) {
-            long now = System.currentTimeMillis();
-            Date mDate = new Date(now);
-            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss");
-            String getTime = simpleDate.format(mDate);
-            double nowTime = Double.parseDouble(getTime);
-
-            getSampleMarkerItems();
-
-            if (markers.containsKey(location.id)) {//이미 있었던 매장 (객체에 내용만 수정)
-                if ((nowTime - location.time) > 100) {
-                    markers.get(location.id).setSnippet("현재촬영중이아님");
-                } else if (location.count == 0) {
-                    markers.get(location.id).setSnippet("여유");
-                } else if (((double) location.count / location.seat * 100) < 30) {
-                    markers.get(location.id).setSnippet("여유");
-                } else if (((double) location.count / location.seat * 100) < 70) {
-                    markers.get(location.id).setSnippet("보통");
-                } else {
-                    markers.get(location.id).setSnippet("혼잡");
-                }
-            } else {//새로운 매장 (객체를 추가)
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(new LatLng(location.lat, location.lng));
-                markerOptions.title(location.name);
-            /*
-            if (location.count == 0)
-                markerOptions.snippet("0%");
-            else
-                markerOptions.snippet("" + (double) location.count / location.seat * 100 + "%");*/
-                if ((nowTime - location.time) > 100) {
-                    markerOptions.snippet("현재촬영중이아님");
-                } else if (location.count == 0) {
-                    markerOptions.snippet("여유");
-                } else if (((double) location.count / location.seat * 100) < 30) {
-                    markerOptions.snippet("여유");
-                } else if (((double) location.count / location.seat * 100) < 70) {
-                    markerOptions.snippet("보통");
-                } else {
-                    markerOptions.snippet("혼잡");
-                }
-
-
-                if (mMap != null) {
-                    markers.put(location.id, mMap.addMarker(markerOptions));
-                    markers.get(location.id).setTag(location.getId());
-                }
-            }
-
-        }
-        if (mMap != null && !is_location_on && is_first_move) {
-            is_first_move = false;
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(37.571015, 127.009382), 14f));
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            Log.d("asdf", Double.parseDouble(data.getStringExtra("lat")) + " " + Double.parseDouble(data.getStringExtra("lng")));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(Double.parseDouble(data.getStringExtra("lat")), Double.parseDouble(data.getStringExtra("lng"))), 15f));
-        }
+    public void onBackPressed() {
+        super.onBackPressed();
+        moveTaskToBack(true);
+        finish();
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.action_search:
-                playButtonClickAnimation(R.id.action_search);
+        if(!isPrograssing) {
+            switch (view.getId()) {
+                case R.id.btn_list:
+                    callFragment(FragmentType.LIST_FRAGMENT);
+                    break;
 
-                Intent intent = new Intent(GuestActivity.this, SearchActivity.class);
-                intent.putExtra("data", gson.toJson(locations));
-                intent.putExtra("keyword", et.getText().toString());
-                startActivityForResult(intent, 1);
+                case R.id.btn_map:
+                    callFragment(FragmentType.MAP_FRAGMENT);
+                    break;
+
+            }
+        }
+    }
+
+    public void callFragment(FragmentType n) {
+        switch (n){
+            case LIST_FRAGMENT:
+                switchFragment(listFragment);
+                tabImageViews.get(0).setImageResource(R.drawable.ic_map_non_seleted);
+                tabImageViews.get(1).setImageResource(R.drawable.ic_list_selet);
                 break;
 
-            case R.id.action_locate:
-                playButtonClickAnimation(R.id.action_locate);
-                if (is_location_on) {
-                    ((ImageView) findViewById(R.id.action_locate)).setImageDrawable(getResources().getDrawable(R.drawable.ic_action_locate_off));
-                    if (personalMarker != null) personalMarker.remove();
-                } else {
-                    ((ImageView) findViewById(R.id.action_locate)).setImageDrawable(getResources().getDrawable(R.drawable.ic_action_locate_on));
-                    is_first_move = true;
-                }
-                is_location_on = !is_location_on;
-
+            case MAP_FRAGMENT:
+                switchFragment(mapFragment);
+                tabImageViews.get(0).setImageResource(R.drawable.ic_map_selected);
+                tabImageViews.get(1).setImageResource(R.drawable.ic_list_non_seleted);
                 break;
         }
-        hideKeyboard();
     }
 
-    private void playButtonClickAnimation(int id) {
-        findViewById(id).startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_in));
+    public void switchFragment(Fragment fr){
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        fragmentTransaction.replace(R.id.main_fragment, fr);
+        fragmentTransaction.commit();
     }
 
-    private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(et.getWindowToken(), 0);
-    }
-
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-        Intent intent = new Intent(GuestActivity.this, CommentActivity.class);
-        intent.putExtra("id", marker.getTag() + "");
-        startActivity(intent);
-    }
-
-    private void getSampleMarkerItems() {
-        ArrayList<MarkerItem> sampleList = new ArrayList();
-        for (Location location : locations){
-            sampleList.add(new MarkerItem(location.lat, location.lng, location.count, location.name));
-        }
-
-        for (MarkerItem markerItem : sampleList) {
-            addMarker(markerItem, false);
-        }
-    }
-
-    private void setCustomMarkerView() {
-        marker_root_view = LayoutInflater.from(this).inflate(R.layout.marker_layout, null);
-        tv_marker = (TextView) marker_root_view.findViewById(R.id.MarkerTextView);
-    }
-
-    private Marker addMarker(MarkerItem markerItem, boolean isSelectedMarker) {
-        LatLng position = new LatLng(markerItem.getLat(), markerItem.getLon());
-        int Seat = markerItem.getSeat();
-        String formatted =  Integer.toString(Seat);
-        String storeName = markerItem.getstoreName();
-
-        tv_marker.setText(storeName + "\n" +formatted);
-
-        if (isSelectedMarker) {
-            tv_marker.setBackgroundResource(R.drawable.marker);
-            tv_marker.setTextColor(Color.WHITE);
-        } else {
-            tv_marker.setBackgroundResource(R.drawable.marker2);
-            tv_marker.setTextColor(Color.BLACK);
-        }
-
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.title(storeName);
-        markerOptions.snippet(Integer.toString(Seat));
-        markerOptions.position(position);
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(this, marker_root_view)));
-
-
-        return mMap.addMarker(markerOptions);
-    }
-
-    private Bitmap createDrawableFromView(Context context, View view) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
-        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
-        view.buildDrawingCache();
-        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(bitmap);
-        view.draw(canvas);
-
-        return bitmap;
-    }
 
 
 }

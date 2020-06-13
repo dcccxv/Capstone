@@ -1,8 +1,9 @@
 package com.google.sample.cloudvision;
 
 public class Location {
-    String name;
-    String id;
+    String name = "";
+    String id = "";
+    String shopimgUrl = "";
     double lat;
     double lng;
     int count;
@@ -68,13 +69,23 @@ public class Location {
         return time;
     }
 
-    public Location(String name, String id, double lat, double lng, int count, int seat, double time) {
+    public Location(String name, String id, String shopimgUrl, double lat, double lng, int count, int seat, double time) {
         this.name = name;
         this.id = id;
+        this.shopimgUrl = shopimgUrl;
         this.lat = lat;
         this.lng = lng;
         this.count = count;
         this.seat = seat;
         this.time = time;
     }
+
+    public void setShopimgUrl(String shopimgUrl) {
+        this.shopimgUrl = shopimgUrl;
+    }
+
+    public String getShopimgUrl() {
+        return shopimgUrl;
+    }
+
 }

@@ -17,53 +17,37 @@
 package com.google.sample.cloudvision;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.PowerManager;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.app.Activity;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
@@ -75,19 +59,15 @@ import com.google.api.services.vision.v1.VisionRequestInitializer;
 import com.google.api.services.vision.v1.model.AnnotateImageRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
 import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
-
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -95,8 +75,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -231,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();//로그인 ID받아오기
         loginID = intent.getExtras().getString("ID");
 */
-/*
+
         Timer timer = new Timer(true);//자동 촬영
         TimerTask tt = new TimerTask()
         {
@@ -241,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                 startTakePicture ();
             }
         };
-        timer.schedule(tt, 1000,30000);*/
+        timer.schedule(tt, 1000,30000);
 
         ZoomBar = (SeekBar) findViewById(R.id.ZoomBar);
         ZoomBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
@@ -347,56 +325,6 @@ public class MainActivity extends AppCompatActivity {
                 // 입력하기 전에
             }
         });
-
-        TextView lastTime = findViewById(R.id.lastTime);
-        TextView peoples = findViewById(R.id.peoples);
-/*
-        mDatabase.child("locations").child(loginID).child("time").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // Get Post object and use the values to update the UI
-                if(dataSnapshot.getValue(double.class) != null){
-                    double test = dataSnapshot.getValue(double.class);
-                    String post = Double.toString(test);//dataSnapshot.getValue(double.class).toString();
-                    lastTime.setText(post);
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });*/
-
-        mDatabase.child("locations").child(loginID).child("count").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // Get Post object and use the values to update the UI
-                if(dataSnapshot.getValue(int.class) != null){
-                    String post = dataSnapshot.getValue(int.class).toString();
-                    peoples.setText(post+"명");
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
-        });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        try{
-        Timer timer = new Timer(true);//자동 촬영
-        TimerTask tt = new TimerTask()
-        {
-            @Override
-            public void run()
-            {
-                startTakePicture ();
-            }
-        };
-        timer.schedule(tt, 1000,30000);
-        }catch (RuntimeException ex){
-        }
     }
 
     private void setFullScreen(){

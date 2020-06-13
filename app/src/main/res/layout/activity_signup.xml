@@ -182,6 +182,28 @@
                 android:digits="0123456789."/>
         </LinearLayout>
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:weightSum="10">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:weightSum="10">
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8"
+                android:id="@+id/select_img"
+                android:text="이미지 선택"></Button>
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -189,6 +211,7 @@
         android:layout_marginBottom="10dp"
         android:gravity="center"
         android:weightSum="10">
+
 
         <LinearLayout
             android:layout_width="match_parent"
