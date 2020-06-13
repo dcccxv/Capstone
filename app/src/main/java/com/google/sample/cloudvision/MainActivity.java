@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();//로그인 ID받아오기
         loginID = intent.getExtras().getString("ID");
 */
-
+/*
         Timer timer = new Timer(true);//자동 촬영
         TimerTask tt = new TimerTask()
         {
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 startTakePicture ();
             }
         };
-        timer.schedule(tt, 1000,30000);
+        timer.schedule(tt, 1000,30000);*/
 
         ZoomBar = (SeekBar) findViewById(R.id.ZoomBar);
         ZoomBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
@@ -347,6 +347,24 @@ public class MainActivity extends AppCompatActivity {
                 // 입력하기 전에
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        try{
+        Timer timer = new Timer(true);//자동 촬영
+        TimerTask tt = new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                startTakePicture ();
+            }
+        };
+        timer.schedule(tt, 1000,30000);
+        }catch (RuntimeException ex){
+        }
     }
 
     private void setFullScreen(){
