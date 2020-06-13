@@ -8,12 +8,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
-class GpsInfo extends AppCompatActivity implements LocationListener {
+
+public class GpsInfo extends AppCompatActivity implements LocationListener {
 
 
     private final Context mcontext;
@@ -116,4 +117,11 @@ class GpsInfo extends AppCompatActivity implements LocationListener {
 
     }
 
+    public double getLat() {
+        return lat;
+    }
+
+    public double getLng() {
+        return lng;
+    }
 }

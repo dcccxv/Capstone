@@ -1,4 +1,4 @@
-package com.google.sample.cloudvision;
+package com.google.sample.cloudvision.listview_resource;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.RatingBar;
 import android.widget.TextView;
+
+import com.google.sample.cloudvision.R;
 
 import java.util.ArrayList;
 

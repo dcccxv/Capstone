@@ -4,13 +4,27 @@ public class MarkerItem {
     double lat;
     double lon;
     String storeName;
+    String id;
     int seat;
+    int count;
 
-    public MarkerItem(double lat, double lon, int seat, String storeName) {
+
+
+    public MarkerItem(double lat, double lon, int seat, int count, String storeName, String id) {
         this.lat = lat;
         this.lon = lon;
         this.seat = seat;
+        this.count = count;
         this.storeName = storeName;
+        this.id = id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public double getLat() {
@@ -43,5 +57,12 @@ public class MarkerItem {
 
     public void setstoreNamet(String storeName) {
         this.storeName = storeName;
+    }
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public int getCount() {
+        return count;
     }
 }

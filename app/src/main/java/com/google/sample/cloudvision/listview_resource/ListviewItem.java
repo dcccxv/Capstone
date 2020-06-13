@@ -1,4 +1,4 @@
-package com.google.sample.cloudvision;
+package com.google.sample.cloudvision.listview_resource;
 
 public class ListviewItem {
     float rating;
