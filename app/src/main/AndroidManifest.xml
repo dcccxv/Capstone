@@ -10,7 +10,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_icon_eye"
+        android:roundIcon="@mipmap/ic_icon_eye_round"
         android:label="눈치게임"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">

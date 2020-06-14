@@ -89,12 +89,12 @@
 
         <Button
             android:id="@+id/btn_guest_login"
-            android:layout_width="0dp"
-            android:layout_height="103dp"
+            android:layout_width="327dp"
+            android:layout_height="74dp"
             android:layout_weight="8"
             android:background="@drawable/button_guestlogin"
-            android:textColor="#FFFFFF"
-            android:text="게스트 로그인" />
+            android:text="게스트 로그인"
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 </LinearLayout>
