@@ -206,7 +206,7 @@
             <Button
                 android:id="@+id/select_img"
                 android:layout_width="0dp"
-                android:layout_height="105dp"
+                android:layout_height="55dp"
                 android:layout_weight="8"
                 android:background="@drawable/button_guestlogin"
                 android:text="이미지 선택"
@@ -231,7 +231,7 @@
             <Button
                 android:id="@+id/btn_signup"
                 android:layout_width="0dp"
-                android:layout_height="105dp"
+                android:layout_height="55dp"
                 android:layout_weight="8"
                 android:background="@drawable/button_guestlogin"
                 android:text="회원 가입"

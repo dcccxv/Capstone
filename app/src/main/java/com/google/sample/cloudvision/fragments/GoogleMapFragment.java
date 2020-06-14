@@ -47,7 +47,9 @@ import com.google.sample.cloudvision.MarkerItem;
 import com.google.sample.cloudvision.R;
 import com.google.sample.cloudvision.SearchActivity;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -219,7 +221,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, V
     private void getSampleMarkerItems() {
         ArrayList<MarkerItem> sampleList = new ArrayList();
         for (Location location : locations) {
-            sampleList.add(new MarkerItem(location.getLat(), location.getLng(), location.getSeat(), location.getCount(), location.getName(), location.getId()));
+            sampleList.add(new MarkerItem(location.getLat(), location.getLng(), location.getSeat(), location.getCount(), location.getName(), location.getId(), location.getTime()));
         }
 
         for (MarkerItem markerItem : sampleList) {
@@ -241,9 +243,20 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, V
 //            tv_marker.setBackgroundResource(R.drawable.user_green);
 //            tv_marker.setTextColor(Color.BLACK);
 //        }
+
+            long now = System.currentTimeMillis();
+            Date mDate = new Date(now);
+            SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss");
+            String getTime = simpleDate.format(mDate);
+            double nowTime = Double.parseDouble(getTime);
+
         String status = "";
         Log.d("asdf", "% : "+((double) markerItem.getCount() / markerItem.getSeat() * 100));
-        if (markerItem.getCount() == 0 || (((double) markerItem.getCount() / markerItem.getSeat() * 100) < 30)) {
+        if ((nowTime - markerItem.getTime()) > 100) {
+            tv_marker.setBackgroundResource(R.drawable.user_gr);
+            status = "정보없음";
+        }
+        else if (markerItem.getCount() == 0 || (((double) markerItem.getCount() / markerItem.getSeat() * 100) < 30)) {
             tv_marker.setBackgroundResource(R.drawable.user_green);
             status = "여유";
         } else if (((double) markerItem.getCount() / markerItem.getSeat() * 100) < 70) {

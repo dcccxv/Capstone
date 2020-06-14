@@ -1,6 +1,8 @@
 package com.google.sample.cloudvision;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -12,6 +14,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,7 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity {
-
+    private final int PERMISSIONS_REQUEST_RESULT = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +37,18 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        int permissonCheck= ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);//권한요구
+        if(permissonCheck == PackageManager.PERMISSION_GRANTED){
+            ;
+        }else{//권한이 없을때
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)){
+                // Toast.makeText(getApplicationContext(), "카메라권한이 필요합니다", Toast.LENGTH_SHORT).show();
+                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_RESULT);
+            }else{
+                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_RESULT);
+            }
+        }
 
         ((EditText) findViewById(R.id.et_passwd)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override

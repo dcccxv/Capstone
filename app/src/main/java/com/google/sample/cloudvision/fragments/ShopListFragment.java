@@ -27,7 +27,9 @@ import com.google.sample.cloudvision.Location;
 import com.google.sample.cloudvision.R;
 import com.google.sample.cloudvision.listview_resource.ListFragmentAdapter;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ShopListFragment extends Fragment {
     boolean isFirstStart = true;
@@ -66,9 +68,18 @@ public class ShopListFragment extends Fragment {
                     get.setId(postSnapshot.getKey());
                     locations.add(get);
                 }
+
+                long now = System.currentTimeMillis();
+                Date mDate = new Date(now);
+                SimpleDateFormat simpleDate = new SimpleDateFormat("yyyyMMddHHmmss");
+                String getTime = simpleDate.format(mDate);
+                double nowTime = Double.parseDouble(getTime);
+
                 for (Location location : locations) {
                     String status;
-                    if (location.getCount() == 0)
+                    if(nowTime - location.getTime() > 100){
+                        status = "정보없음";
+                    }else if (location.getCount() == 0)
                         status = "여유";
                     else if (((double) location.getCount() / location.getSeat() * 100) < 30)
                         status = "여유";

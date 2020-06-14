@@ -59,7 +59,8 @@
                         android:ems="10"
                         android:inputType="textPersonName"
                         android:text="Name"
-                        android:imeOptions="actionDone"/>
+                        android:imeOptions="actionDone"
+                        android:cursorVisible="false"/>
 
                     <TextView
                         android:id="@+id/textView9"
@@ -74,7 +75,32 @@
                         android:ems="10"
                         android:inputType="number"
                         android:text="0"
-                        android:imeOptions="actionDone" />
+                        android:imeOptions="actionDone"
+                        android:cursorVisible="false"/>
+
+                    <TextView
+                        android:id="@+id/textView3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="마지막 촬영시간" />
+
+                    <TextView
+                        android:id="@+id/lastTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="TextView" />
+
+                    <TextView
+                        android:id="@+id/textView4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="인원수" />
+
+                    <TextView
+                        android:id="@+id/peoples"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="0" />
 
                 </LinearLayout>
 

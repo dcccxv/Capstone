@@ -60,7 +60,7 @@ public class SignupActivity extends AppCompatActivity {
         ((EditText) findViewById(R.id.et_lng)).setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                findViewById(R.id.btn_signup).performClick();
+                findViewById(R.id.select_img).performClick();
                 return false;
             }
         });

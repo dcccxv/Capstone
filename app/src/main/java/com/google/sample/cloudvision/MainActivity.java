@@ -33,12 +33,14 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -119,6 +121,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_main);
         setContentView(R.layout.content_main);
@@ -128,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         loginID = getIntent().getStringExtra("id");
-        getWindow().setStatusBarColor(Color.BLACK);
+        //getWindow().setStatusBarColor(Color.BLACK);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -149,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
             ;
         }else{//권한이 없을때
             if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)){
-                // Toast.makeText(getApplicationContext(), "카메라권한이 필요합니다", Toast.LENGTH_SHORT).show();
+                 Toast.makeText(getApplicationContext(), "카메라권한이 필요합니다", Toast.LENGTH_SHORT).show();
                 ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_RESULT);
             }else{
                 ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_RESULT);
@@ -209,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();//로그인 ID받아오기
         loginID = intent.getExtras().getString("ID");
 */
-
+/*
         Timer timer = new Timer(true);//자동 촬영
         TimerTask tt = new TimerTask()
         {
@@ -220,7 +225,8 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         timer.schedule(tt, 1000,30000);
-
+*/
+/*
         ZoomBar = (SeekBar) findViewById(R.id.ZoomBar);
         ZoomBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
@@ -243,7 +249,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
-
             }
 
             @Override
@@ -257,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO Auto-generated method stub
                 Log.d(TAG, "onStartTrackingTouch");
             }
-        });
+        });*/
 
         EditText editStoreName = (EditText)findViewById(R.id.editStoreName);
         EditText editSeats = (EditText)findViewById(R.id.editSeats);
@@ -325,6 +330,100 @@ public class MainActivity extends AppCompatActivity {
                 // 입력하기 전에
             }
         });
+
+
+        TextView lastTime = findViewById(R.id.lastTime);
+        TextView peoples = findViewById(R.id.peoples);
+
+
+        mDatabase.child("locations").child(loginID).child("time").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Get Post object and use the values to update the UI
+                if(dataSnapshot.getValue(double.class) != null){
+                    double test = dataSnapshot.getValue(double.class);
+                    String post = Double.toString(test);//dataSnapshot.getValue(double.class).toString();
+                    String[] array_word;
+                    array_word = post.split("");
+                    if(array_word[15].equals("E")) array_word[15] = "0";
+
+                    lastTime.setText(array_word[10] + array_word[11] + "시" + array_word[12] + array_word[13] + "분" + array_word[14] + array_word[15] + "초");
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+        mDatabase.child("locations").child(loginID).child("count").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Get Post object and use the values to update the UI
+                if(dataSnapshot.getValue(int.class) != null){
+                    String post = dataSnapshot.getValue(int.class).toString();
+                    peoples.setText(post+"명");
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        try{
+            Timer timer = new Timer(true);//자동 촬영
+            TimerTask tt = new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    startTakePicture ();
+                }
+            };
+            timer.schedule(tt, 1000,30000);
+
+
+        ZoomBar = (SeekBar) findViewById(R.id.ZoomBar);
+        ZoomBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "progress:"+progress);
+                if(inProgress == false) {
+                    if (camera.getParameters().isZoomSupported()) {
+                        if (camera.getParameters().getMaxZoom() > progress) {
+                            Camera.Parameters params = camera.getParameters();
+                            params.setZoom(progress);
+                            camera.setParameters(params);
+
+                            camera.autoFocus(new Camera.AutoFocusCallback() {
+                                @Override
+                                public void onAutoFocus(boolean b, Camera camera) {
+                                    Log.i("a", "autof = " + b);
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "onStartTrackingTouch");
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+                Log.d(TAG, "onStartTrackingTouch");
+            }
+        });
+        }catch (RuntimeException ex){
+        }
     }
 
     private void setFullScreen(){

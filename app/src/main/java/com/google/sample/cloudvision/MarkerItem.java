@@ -7,16 +7,18 @@ public class MarkerItem {
     String id;
     int seat;
     int count;
+    double time;
 
 
 
-    public MarkerItem(double lat, double lon, int seat, int count, String storeName, String id) {
+    public MarkerItem(double lat, double lon, int seat, int count, String storeName, String id, double time) {
         this.lat = lat;
         this.lon = lon;
         this.seat = seat;
         this.count = count;
         this.storeName = storeName;
         this.id = id;
+        this.time = time;
     }
 
     public void setId(String id) {
@@ -64,5 +66,12 @@ public class MarkerItem {
 
     public int getCount() {
         return count;
+    }
+
+    public double getTime() {
+        return time;
+    }
+    public double setTime() {
+        return time;
     }
 }
