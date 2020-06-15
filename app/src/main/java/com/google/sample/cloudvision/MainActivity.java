@@ -526,8 +526,15 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void surfaceDestroyed(SurfaceHolder holder)
         {
+            if (camera != null) {
+                camera.setPreviewCallback(null);
+                camera.stopPreview();
+                camera.release();
+                camera = null;
+            }
+            /*
             camera.release();
-            camera = null;
+            camera = null;*/
         }
     };
 
