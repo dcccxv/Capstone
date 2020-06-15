@@ -383,7 +383,7 @@ public class MainActivity extends AppCompatActivity {
                     startTakePicture ();
                 }
             };
-            timer.schedule(tt, 1000,30000);
+            timer.schedule(tt, 5000,30000);
 
 
         ZoomBar = (SeekBar) findViewById(R.id.ZoomBar);
