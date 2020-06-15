@@ -254,7 +254,7 @@ public class GoogleMapFragment extends Fragment implements OnMapReadyCallback, V
         Log.d("asdf", "% : "+((double) markerItem.getCount() / markerItem.getSeat() * 100));
         if ((nowTime - markerItem.getTime()) > 100) {
             tv_marker.setBackgroundResource(R.drawable.user_gr);
-            status = "정보없음";
+            status = "종료";
         }
         else if (markerItem.getCount() == 0 || (((double) markerItem.getCount() / markerItem.getSeat() * 100) < 30)) {
             tv_marker.setBackgroundResource(R.drawable.user_green);
