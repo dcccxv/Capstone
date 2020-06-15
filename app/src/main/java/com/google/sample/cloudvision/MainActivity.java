@@ -320,9 +320,15 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void afterTextChanged(Editable arg0) {
-                Map<String, Object> taskMap = new HashMap<String, Object>();
-                taskMap.put("locations/"+loginID+"/seat", Integer.parseInt(arg0.toString()));
-                mDatabase.updateChildren(taskMap);
+                try {
+                    Map<String, Object> taskMap = new HashMap<String, Object>();
+                    taskMap.put("locations/"+loginID+"/seat", Integer.parseInt(arg0.toString()));
+                    mDatabase.updateChildren(taskMap);
+                } catch (NumberFormatException e) {
+                    // NumberFormatException 이 발생한 경우 처리 방법
+                } catch (Exception e) {
+                    // Exception 이 발생한 경우 처리 방법
+                }
                 // 입력이 끝났을 때
             }
             @Override
