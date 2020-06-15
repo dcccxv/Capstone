@@ -78,7 +78,7 @@ public class ShopListFragment extends Fragment {
                 for (Location location : locations) {
                     String status;
                     if(nowTime - location.getTime() > 100){
-                        status = "정보없음";
+                        status = "종료";
                     }else if (location.getCount() == 0)
                         status = "여유";
                     else if (((double) location.getCount() / location.getSeat() * 100) < 30)
