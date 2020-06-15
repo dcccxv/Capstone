@@ -351,9 +351,18 @@ public class MainActivity extends AppCompatActivity {
                     String post = Double.toString(test);//dataSnapshot.getValue(double.class).toString();
                     String[] array_word;
                     array_word = post.split("");
-                    if(array_word[15].equals("E")) array_word[15] = "0";
+                    for(int i=0;i<16;i++){
+                        try {
+                            if (array_word[i].equals("E"))
+                                array_word[i] = "0";
+                        }catch(Exception e) {
+                        }
+                    }
+                    try {
+                        lastTime.setText(array_word[10] + array_word[11] + "시" + array_word[12] + array_word[13] + "분" + array_word[14] + array_word[15] + "초");
+                    }catch(Exception e) {
 
-                    lastTime.setText(array_word[10] + array_word[11] + "시" + array_word[12] + array_word[13] + "분" + array_word[14] + array_word[15] + "초");
+                    }
                 }
             }
             @Override

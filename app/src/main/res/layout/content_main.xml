@@ -92,7 +92,7 @@
                         android:id="@+id/lastTime"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="TextView" />
+                        android:text="정보없음" />
 
                     <TextView
                         android:id="@+id/textView4"

@@ -43,7 +43,7 @@ public class ListFragmentAdapter extends BaseAdapter {
         shopname.setText(item.getName());
         dif.setText(item.getStatus());
         int drawable;
-        if (item.getStatus().equals("정보없음")) {
+        if (item.getStatus().equals("종료")) {
             drawable = R.drawable.user;
             dif.setTextColor(Color.parseColor("#808080"));
         }else if (item.getStatus().equals("혼잡")) {
